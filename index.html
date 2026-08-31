@@ -505,24 +505,38 @@
   <h2 class="font-display text-3xl md:text-4xl text-paper mb-12">Education</h2>
   <div class="grid md:grid-cols-3 gap-8">
     <!-- Marist -->
-    <div class="p-4 rounded-2xl bg-ink-900 border border-white/10 grad-border flex flex-col">
+    <div class="p-4 rounded-2xl bg-ink-900 border border-white/10 grad-border flex flex-col relative">
       <div class="h-80 rounded-xl bg-ink-800 flex items-center justify-center mb-4 overflow-hidden relative border border-white/5">
         <img src="marist-grad.jpg" alt="Marist College Graduation" class="w-full h-full object-cover">
       </div>
-      <h3 class="font-display text-xl text-paper mb-1">Bachelor's Degree</h3>
+      <div class="flex items-start justify-between mb-1">
+        <h3 class="font-display text-xl text-paper">Bachelor's Degree</h3>
+        <span class="font-mono text-[11px] text-fog/80 bg-white/5 px-2 py-0.5 rounded border border-white/10">Class of 2020</span>
+      </div>
       <p class="font-mono text-xs text-sunset-gold mb-1">Marist College</p>
       <p class="font-mono text-xs text-sunset-orange mb-2">Mathematics</p>
-      <p class="text-sm text-fog">Foundation in rigorous analysis and core disciplinary studies.</p>
+      <p class="text-sm text-fog mb-6">Foundation in rigorous analysis and core disciplinary studies.</p>
+      <!-- School Logo Container -->
+      <div class="absolute bottom-4 right-4 w-10 h-10 rounded-lg bg-ink-800 border border-white/15 overflow-hidden p-1 shadow-inner">
+        <img src="marist-logo.jpg" alt="Marist Logo" class="w-full h-full object-cover rounded">
+      </div>
     </div>
     <!-- DePaul -->
-    <div class="p-4 rounded-2xl bg-ink-900 border border-white/10 grad-border flex flex-col">
+    <div class="p-4 rounded-2xl bg-ink-900 border border-white/10 grad-border flex flex-col relative">
       <div class="h-80 rounded-xl bg-ink-800 flex items-center justify-center mb-4 overflow-hidden relative border border-white/5">
         <img src="depaul-grad.jpg" alt="DePaul University Graduation" class="w-full h-full object-cover">
       </div>
-      <h3 class="font-display text-xl text-paper mb-1">M.Ed (Master of Education)</h3>
+      <div class="flex items-start justify-between mb-1">
+        <h3 class="font-display text-xl text-paper">M.Ed (Master of Education)</h3>
+        <span class="font-mono text-[11px] text-fog/80 bg-white/5 px-2 py-0.5 rounded border border-white/10">Class of 2022</span>
+      </div>
       <p class="font-mono text-xs text-sunset-gold mb-1">DePaul University</p>
       <p class="font-mono text-xs text-sunset-orange mb-2">Mathematics Education</p>
-      <p class="text-sm text-fog">Honed instructional intuition and methods for making complex topics click.</p>
+      <p class="text-sm text-fog mb-6">Honed instructional intuition and methods for making complex topics click.</p>
+      <!-- School Logo Container -->
+      <div class="absolute bottom-4 right-4 w-10 h-10 rounded-lg bg-ink-800 border border-white/15 overflow-hidden p-1 shadow-inner">
+        <img src="depaul-logo.jpg" alt="DePaul Logo" class="w-full h-full object-cover rounded">
+      </div>
     </div>
     <!-- Michigan MADS -->
     <div class="p-4 rounded-2xl bg-ink-900 border border-white/10 grad-border flex flex-col relative opacity-90">
@@ -530,10 +544,17 @@
         <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-sunset-orange/20 text-sunset-orange font-mono text-[10px] tracking-wider uppercase z-10">Coming Soon</span>
         <img src="michigan-grad.jpg" alt="University of Michigan" class="w-full h-full object-cover">
       </div>
-      <h3 class="font-display text-xl text-paper mb-1">MADS (Master of Applied Data Science)</h3>
+      <div class="flex items-start justify-between mb-1">
+        <h3 class="font-display text-xl text-paper">MADS (Master of Applied Data Science)</h3>
+        <span class="font-mono text-[11px] text-sunset-orange/90 bg-white/5 px-2 py-0.5 rounded border border-white/10">Class of 2026</span>
+      </div>
       <p class="font-mono text-xs text-sunset-gold mb-1">University of Michigan</p>
       <p class="font-mono text-xs text-sunset-orange mb-2">Applied Data Science</p>
-      <p class="text-sm text-fog">Advanced computational data science, machine learning, and scalable systems.</p>
+      <p class="text-sm text-fog mb-6">Advanced computational data science, machine learning, and scalable systems.</p>
+      <!-- School Logo Container -->
+      <div class="absolute bottom-4 right-4 w-10 h-10 rounded-lg bg-ink-800 border border-white/15 overflow-hidden p-1 shadow-inner">
+        <img src="michigan-logo.jpg" alt="Michigan Logo" class="w-full h-full object-cover rounded">
+      </div>
     </div>
   </div>
 </section>
