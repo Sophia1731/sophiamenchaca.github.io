@@ -109,6 +109,24 @@
 </head>
 <body class="font-body text-paper antialiased overflow-x-hidden">
 
+  <div id="splash-screen" class="fixed inset-0 z-50 bg-ink-950 flex flex-col items-center justify-center transition-opacity duration-700">
+    <div class="text-center mb-6 cursor-pointer group" onclick="enterPortfolio()">
+      <h1 class="font-display text-3xl md:text-5xl text-paper mb-2 tracking-wide group-hover:text-sunset-orange transition-colors">
+        Sophia Menchaca
+      </h1>
+      <p class="font-mono text-xs text-sunset-gold tracking-widest uppercase">
+        Interactive Portfolio &middot; Click Globe to Enter
+      </p>
+    </div>
+  
+    <div id="globe-container" class="w-72 h-72 md:w-96 md:h-96 cursor-pointer rounded-full relative shadow-2xl shadow-sunset-orange/20 hover:scale-105 transition-transform duration-500" onclick="enterPortfolio()" title="Click to Enter Portfolio">
+      </div>
+  
+    <p class="font-mono text-[10px] text-fog/60 mt-6 tracking-wider animate-pulse">
+      [ EXPLORE GLOBE &middot; CLICK TO ENTER ]
+    </p>
+  </div>
+
   <!-- ambient background arcs -->
   <div class="fixed inset-0 -z-10 pointer-events-none">
     <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(255,157,92,0.08),transparent)]"></div>
@@ -118,7 +136,7 @@
       <path class="arc-line" d="M200,500 Q700,220 1220,300" stroke="#ff5c8a" stroke-width="1.2" fill="none" style="animation-delay:.3s"/>
     </svg>
   </div>
-
+<div id="main-content" class="opacity-0 transition-opacity duration-1000 pointer-events-none">
   <!-- NAV -->
   <header class="fixed top-0 inset-x-0 z-40 backdrop-blur-md bg-ink-950/60 border-b border-white/5">
     <div class="max-w-6xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
@@ -708,7 +726,7 @@
           <span class="flex items-center gap-2"><span class="w-3 h-0.5 bg-sunset-coral"></span>flight</span>
           <span class="flex items-center gap-2"><span class="w-3 h-0.5 bg-dusk-400" style="background-image:repeating-linear-gradient(90deg,#a78bfa 0 3px,transparent 3px 6px)"></span>train</span>
           <span class="flex items-center gap-2"><span class="w-3 h-0.5" style="background-image:repeating-linear-gradient(90deg,#ffce6b 0 1.5px,transparent 1.5px 4px)"></span>bus</span>
-          <span class="flex items-center gap-2"><span class="w-3 h-0.5" style="background-image:repeating-linear-gradient(90deg,#38bdf8 0 1px,transparent 1px 3px)"></span><span class="text-sunset-rose">~</span> ferry</span>
+          <span class="flex items-center gap-2"><span class="text-sunset-rose">~</span> ferry</span>
         </div>
         <a href="https://interact-map-sophia.streamlit.app/" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-sm text-sunset-orange hover:text-sunset-gold transition">
           Open full journal
@@ -974,7 +992,7 @@
     </div>
     <p class="max-w-6xl mx-auto mt-16 text-xs font-mono text-fog/60">© 2026 Sophia Menchaca. Currently plotting the next route.</p>
   </footer>
-
+</div>
   <script>
     // mobile menu
     const menuBtn = document.getElementById('menu-btn');
@@ -1048,5 +1066,105 @@
       }
     })();
   </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+  let globeScene, globeCamera, globeRenderer, globeMesh;
+  let isDragging = false;
+  let previousMousePosition = { x: 0, y: 0 };
+
+  function initSplashGlobe() {
+    const container = document.getElementById('globe-container');
+    if (!container) return;
+
+    // 1. Scene & Camera Setup
+    globeScene = new THREE.Scene();
+    globeCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    globeCamera.position.z = 2.5;
+
+    // 2. Renderer Setup
+    globeRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    globeRenderer.setSize(container.clientWidth, container.clientHeight);
+    globeRenderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(globeRenderer.domElement);
+
+    // 3. Create Sphere (The Earth / Globe)
+    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    
+    // Using your theme styling colors (Deep ink blue base with sunset orange/gold wireframe or shader look)
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x0d0f1f, // matches your ink-900 background theme
+      wireframe: true,
+      transparent: true,
+      opacity: 0.35
+    });
+
+    globeMesh = new THREE.Mesh(geometry, material);
+    globeScene.add(globeMesh);
+
+    // Add an inner glowing core or secondary textured mesh if desired
+    const coreGeometry = new THREE.SphereGeometry(0.98, 32, 32);
+    const coreMaterial = new THREE.MeshBasicMaterial({
+      color: 0xff7b54, // sunset-orange accent
+      transparent: true,
+      opacity: 0.15
+    });
+    const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+    globeScene.add(coreMesh);
+
+    // 4. Mouse / Touch Interaction for Dragging the Globe
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - previousMousePosition.x;
+      const deltaY = e.clientY - previousMousePosition.y;
+
+      globeMesh.rotation.y += deltaX * 0.005;
+      globeMesh.rotation.x += deltaY * 0.005;
+      coreMesh.rotation.y += deltaX * 0.005;
+      coreMesh.rotation.x += deltaY * 0.005;
+
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    // 5. Animation Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!isDragging) {
+        globeMesh.rotation.y += 0.002; // Auto rotate slowly when not interacting
+        coreMesh.rotation.y += 0.002;
+      }
+      globeRenderer.render(globeScene, globeCamera);
+    }
+    animate();
+  }
+
+  // Function triggered when user clicks the globe to enter site
+  function enterPortfolio() {
+    const splash = document.getElementById('splash-screen');
+    const mainContent = document.getElementById('main-content');
+
+    // Fade out splash screen
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      splash.style.display = 'none';
+    }, 700);
+
+    // Fade in main portfolio content & enable interactions
+    mainContent.style.pointerEvents = 'auto';
+    mainContent.style.opacity = '1';
+  }
+
+  // Initialize globe on window load
+  window.addEventListener('DOMContentLoaded', initSplashGlobe);
+</script>
+  
 </body>
 </html>
