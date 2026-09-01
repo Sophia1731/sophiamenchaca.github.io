@@ -106,26 +106,114 @@
     margin-right: 0.5rem;
   }
 </style>
+<style>
+  @keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    70% { transform: scale(2.2); opacity: 0; }
+    100% { transform: scale(0.95); opacity: 0; }
+  }
+  .pulse-ring {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ff9d5c;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 10px rgba(255, 157, 92, 0.5);
+    background: rgba(255, 157, 92, 0.3);
+  }
+  .enter-btn:hover {
+    background: #ff9d5c !important;
+    color: #080914 !important;
+    box-shadow: 0 0 25px rgba(255, 157, 92, 0.6);
+  }
+</style>
 </head>
 <body class="font-body text-paper antialiased overflow-x-hidden">
 
-  <div id="splash-screen" class="fixed inset-0 z-50 bg-ink-950 flex flex-col items-center justify-center transition-opacity duration-700">
-    <div class="text-center mb-6 cursor-pointer group" onclick="enterPortfolio()">
-      <h1 class="font-display text-3xl md:text-5xl text-paper mb-2 tracking-wide group-hover:text-sunset-orange transition-colors">
-        Sophia Menchaca
-      </h1>
-      <p class="font-mono text-xs text-sunset-gold tracking-widest uppercase">
-        Interactive Portfolio &middot; Click Globe to Enter
-      </p>
-    </div>
-  
-    <div id="globe-container" class="w-72 h-72 md:w-96 md:h-96 cursor-pointer rounded-full relative shadow-2xl shadow-sunset-orange/20 hover:scale-105 transition-transform duration-500" onclick="enterPortfolio()" title="Click to Enter Portfolio">
-      </div>
-  
-    <p class="font-mono text-[10px] text-fog/60 mt-6 tracking-wider animate-pulse">
-      [ EXPLORE GLOBE &middot; CLICK TO ENTER ]
-    </p>
+<div id="map-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;">
+  <div id="entry-overlay" style="position: absolute; inset: 0; background: rgba(8, 9, 20, 0.95); backdrop-filter: blur(6px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; transition: opacity 0.5s ease;">
+    <p style="margin-bottom: 20px; font-size: 13px; color: #9aa0b8; font-family: 'IBM Plex Mono', monospace;">SYSTEM INITIALIZED // SELECT NODE OR ENTER</p>
+    <button class="enter-btn" onclick="dismissOverlay()" style="background: transparent; color: #ff9d5c; border: 1px solid #ff9d5c; padding: 12px 32px; font-size: 14px; letter-spacing: 2px; cursor: pointer; font-family: inherit; transition: all 0.3s ease;">INITIALIZE DASHBOARD</button>
   </div>
+
+  <canvas id="mapCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+
+  <button class="city-node" style="position: absolute; top: 35%; left: 26%; transform: translate(-50%, -50%); background: none; border: none; cursor: pointer; z-index: 10; display: flex; flex-direction: column; align-items: center;" onclick="navigateTo('chicago')">
+    <div class="pulse-ring"></div>
+    <span class="city-label" style="margin-top: 6px; font-size: 11px; letter-spacing: 1px; color: #f4f1ee; background: rgba(13, 15, 31, 0.8); padding: 2px 6px; border-radius: 3px; border: 1px solid #2a2e4d; font-family: 'IBM Plex Mono', monospace;">CHICAGO [ORD]</span>
+  </button>
+
+  <button class="city-node" style="position: absolute; top: 28%; left: 51%; transform: translate(-50%, -50%); background: none; border: none; cursor: pointer; z-index: 10; display: flex; flex-direction: column; align-items: center;" onclick="navigateTo('amsterdam')">
+    <div class="pulse-ring"></div>
+    <span class="city-label" style="margin-top: 6px; font-size: 11px; letter-spacing: 1px; color: #f4f1ee; background: rgba(13, 15, 31, 0.8); padding: 2px 6px; border-radius: 3px; border: 1px solid #2a2e4d; font-family: 'IBM Plex Mono', monospace;">AMSTERDAM [AMS]</span>
+  </button>
+
+  <button class="city-node" style="position: absolute; top: 78%; left: 84%; transform: translate(-50%, -50%); background: none; border: none; cursor: pointer; z-index: 10; display: flex; flex-direction: column; align-items: center;" onclick="navigateTo('sydney')">
+    <div class="pulse-ring"></div>
+    <span class="city-label" style="margin-top: 6px; font-size: 11px; letter-spacing: 1px; color: #f4f1ee; background: rgba(13, 15, 31, 0.8); padding: 2px 6px; border-radius: 3px; border: 1px solid #2a2e4d; font-family: 'IBM Plex Mono', monospace;">SYDNEY [SYD]</span>
+  </button>
+</div>
+
+<script>
+  const canvas = document.getElementById('mapCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    drawGrid();
+  }
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = '#14172b';
+    ctx.lineWidth = 1;
+    
+    const step = 60;
+    for (let x = 0; x < canvas.width; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = 'rgba(255, 157, 92, 0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.26, canvas.height * 0.35);
+    ctx.quadraticCurveTo(canvas.width * 0.38, canvas.height * 0.15, canvas.width * 0.51, canvas.height * 0.28);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.51, canvas.height * 0.28);
+    ctx.quadraticCurveTo(canvas.width * 0.70, canvas.height * 0.60, canvas.width * 0.84, canvas.height * 0.78);
+    ctx.stroke();
+    
+    ctx.setLineDash([]);
+  }
+
+  function dismissOverlay() {
+    const overlay = document.getElementById('entry-overlay');
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 500);
+  }
+
+  function navigateTo(destination) {
+    window.location.href = `./pages/${destination}.html`;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+</script>
 
   <!-- ambient background arcs -->
   <div class="fixed inset-0 -z-10 pointer-events-none">
@@ -1067,256 +1155,6 @@
     })();
   </script>
 
-<!-- Loading Screen -->
-<!-- Include Three.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-<script>
-  let globeScene, globeCamera, globeRenderer, globeMesh;
-  let isDragging = false;
-  let previousMousePosition = { x: 0, y: 0 };
-
-  // Generate a procedural world map canvas texture for landmasses
-  function createWorldMapTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
-
-    // Ocean background (dark navy)
-    ctx.fillStyle = '#0d0f1f';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Land styling with smooth curves
-    ctx.fillStyle = '#141738';
-    ctx.strokeStyle = '#6666ff';
-    ctx.lineWidth = 1.8;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-
-    // Helper to draw land blobs
-    // Helper to draw complex polygon shapes from coordinate arrays
-    function drawSmoothPolygon(coords) {
-      if (coords.length === 0) return;
-      ctx.beginPath();
-      ctx.moveTo(coords[0][0], coords[0][1]);
-      
-      for (let i = 0; i < coords.length; i++) {
-        const p0 = coords[(i - 1 + coords.length) % coords.length];
-        const p1 = coords[i];
-        const p2 = coords[(i + 1) % coords.length];
-        const p3 = coords[(i + 2) % coords.length];
-
-        // Catmull-Rom to Cubic Bezier conversion for smooth cartographic curves
-        const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
-        const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
-        const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
-        const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
-
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2[0], p2[1]);
-      }
-      
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-    }
-
-    // 1. North America (Organic continental silhouette: Alaska, Canada, US, Mexico, Central America)
-    drawSmoothPolygon([
-      [270, 195], [285, 202], [300, 215], [315, 208], [330, 190], [322, 175], [305, 168], 
-      [288, 182], [272, 184], [258, 195], [245, 210], [240, 225], [248, 238], [262, 252], 
-      [278, 268], [294, 275], [310, 265], [325, 262], [342, 272], [352, 288], [358, 305], 
-      [346, 316], [330, 318], [314, 328], [298, 335], [304, 350], [320, 360], [338, 365], 
-      [352, 375], [362, 390], [372, 410], [386, 420], [402, 430], [418, 438], [432, 448], 
-      [442, 432], [458, 412], [472, 398], [486, 388], [502, 378], [518, 368], [512, 352], 
-      [496, 342], [480, 332], [468, 318], [478, 308], [498, 302], [520, 308], [540, 310], 
-      [562, 308], [582, 298], [592, 282], [582, 268], [566, 262], [550, 264], [534, 252], 
-      [518, 238], [528, 222], [538, 210], [554, 208], [570, 214], [586, 208], [596, 192], 
-      [580, 178], [564, 162], [548, 158], [528, 162], [508, 152], [488, 142], [468, 138], 
-      [444, 135], [420, 138], [398, 130], [378, 136], [358, 146], [338, 150], [324, 145], 
-      [308, 155], [294, 165], [308, 180]
-    ]);
-
-    // 2. Greenland (Smooth Arctic ice sheet contour)
-    drawSmoothPolygon([
-      [640, 120], [656, 110], [672, 102], [688, 98], [708, 102], [728, 110], 
-      [740, 124], [744, 142], [736, 162], [722, 180], [706, 190], [690, 194], 
-      [672, 190], [658, 180], [646, 166], [636, 148], [634, 132], [638, 122]
-    ]);
-
-    // 3. South America (Fluid curves mapping Amazon, Brazilian Highlands, and Patagonia)
-    drawSmoothPolygon([
-      [470, 480], [492, 470], [512, 465], [534, 475], [556, 485], [576, 480], 
-      [596, 490], [606, 508], [602, 530], [582, 548], [570, 566], [584, 584], 
-      [600, 600], [590, 624], [566, 640], [552, 666], [538, 690], [524, 720], 
-      [510, 750], [496, 780], [480, 810], [466, 834], [454, 854], [440, 836], 
-      [446, 820], [436, 800], [426, 776], [418, 750], [412, 720], [408, 690], 
-      [400, 662], [390, 635], [386, 610], [396, 590], [406, 570], [420, 550], 
-      [436, 530], [450, 506], [464, 490]
-    ]);
-
-    // 4. Eurasia (Sweeping natural curves across Europe, Scandinavia, Siberia, and East Asia)
-    drawSmoothPolygon([
-      [950, 140], [970, 132], [990, 128], [1014, 134], [1038, 140], [1064, 146], 
-      [1086, 140], [1112, 132], [1138, 130], [1162, 140], [1186, 148], [1214, 140], 
-      [1240, 130], [1268, 132], [1296, 140], [1322, 144], [1352, 136], [1384, 130], 
-      [1412, 138], [1440, 148], [1468, 150], [1498, 142], [1528, 136], [1558, 144], 
-      [1588, 154], [1618, 160], [1648, 176], [1678, 190], [1704, 210], [1728, 236], 
-      [1722, 258], [1698, 276], [1674, 290], [1654, 280], [1632, 270], [1616, 282], 
-      [1602, 298], [1590, 310], [1570, 302], [1546, 296], [1526, 290], [1506, 300], 
-      [1486, 316], [1464, 318], [1440, 312], [1420, 310], [1396, 320], [1376, 336], 
-      [1360, 340], [1344, 330], [1326, 320], [1306, 330], [1286, 348], [1270, 360], 
-      [1254, 350], [1240, 340], [1220, 348], [1200, 366], [1184, 370], [1166, 360], 
-      [1150, 350], [1132, 358], [1114, 372], [1094, 380], [1076, 370], [1060, 356], 
-      [1044, 350], [1026, 358], [1014, 366], [1000, 352], [986, 338], [994, 326], 
-      [1006, 312], [1014, 298], [996, 294], [980, 292], [966, 300], [956, 312], 
-      [946, 326], [934, 320], [920, 308], [914, 296], [926, 282], [936, 272], 
-      [924, 262], [910, 256], [902, 242], [916, 232], [926, 222], [916, 210], 
-      [902, 200], [910, 188], [924, 176], [938, 166], [946, 150]
-    ]);
-
-    // Indian Subcontinent Extension
-    drawSmoothPolygon([
-      [1326, 320], [1344, 330], [1360, 340], [1376, 354], [1390, 374], [1394, 394], 
-      [1384, 410], [1370, 426], [1354, 430], [1336, 420], [1324, 406], [1314, 388], 
-      [1306, 366], [1306, 346], [1316, 330]
-    ]);
-
-    // Southeast Asia & Indochina Peninsula
-    drawSmoothPolygon([
-      [1420, 310], [1436, 326], [1454, 344], [1470, 356], [1484, 376], [1492, 398], 
-      [1494, 420], [1482, 434], [1464, 450], [1450, 464], [1434, 448], [1422, 430], 
-      [1414, 412], [1412, 390], [1414, 364], [1416, 336]
-    ]);
-
-    // 5. Africa (Smooth Mediterranean edge, Horn of Africa, Cape, and Madagascar)
-    drawSmoothPolygon([
-      [1010, 410], [1030, 404], [1052, 398], [1074, 394], [1094, 396], [1114, 404], 
-      [1134, 410], [1154, 400], [1170, 390], [1184, 398], [1200, 410], [1214, 426], 
-      [1226, 448], [1216, 474], [1202, 498], [1186, 524], [1174, 550], [1160, 576], 
-      [1146, 606], [1136, 636], [1124, 666], [1112, 696], [1096, 726], [1082, 754], 
-      [1064, 780], [1050, 800], [1034, 820], [1020, 808], [1006, 790], [994, 768], 
-      [984, 740], [974, 710], [964, 680], [956, 650], [950, 620], [952, 590], 
-      [960, 564], [964, 536], [954, 510], [944, 486], [950, 470], [964, 450], 
-      [978, 436], [994, 424], [1004, 414]
-    ]);
-
-    // Madagascar
-    drawSmoothPolygon([
-      [1150, 750], [1164, 744], [1176, 740], [1184, 754], [1190, 774], [1194, 794], 
-      [1184, 806], [1170, 814], [1158, 804], [1152, 786], [1150, 764]
-    ]);
-
-    // 6. Australia (True-to-scale organic coastline with Cape York and smooth contours)
-    drawSmoothPolygon([
-      [1530, 670], [1554, 666], [1580, 664], [1604, 660], [1630, 666], [1654, 674], 
-      [1680, 680], [1698, 694], [1714, 710], [1712, 734], [1706, 758], [1702, 780], 
-      [1684, 794], [1664, 810], [1640, 818], [1614, 816], [1590, 814], [1566, 804], 
-      [1544, 790], [1526, 774], [1516, 750], [1510, 728], [1504, 706], [1512, 690], [1522, 676]
-    ]);
-
-    // 7. New Zealand (North and South Islands with smooth natural shapes)
-    drawSmoothPolygon([
-      [1760, 830], [1772, 824], [1782, 818], [1790, 830], [1794, 846], [1790, 858], 
-      [1780, 866], [1770, 870], [1762, 856], [1758, 840]
-    ]);
-    drawSmoothPolygon([
-      [1750, 880], [1762, 876], [1774, 872], [1780, 886], [1784, 904], [1782, 918], 
-      [1772, 926], [1762, 930], [1756, 916], [1752, 896]
-    ]);
-
-    // 8. Antarctica (Fluid southern polar ice sheet coastline)
-    drawSmoothPolygon([
-      [0, 960], [150, 936], [300, 924], [450, 914], [600, 916], [750, 926], 
-      [900, 936], [1050, 926], [1200, 916], [1350, 920], [1500, 928], [1650, 920], 
-      [1800, 914], [1950, 924], [2048, 960], [2048, 1024], [0, 1024]
-    ]);
-
-    // 9. Hawaii (Natural clustered island shapes)
-    drawSmoothPolygon([
-      [220, 480], [228, 476], [236, 474], [242, 478], [244, 484], [240, 490], 
-      [234, 492], [226, 494], [220, 490], [218, 484]
-    ]);
-
-    return new THREE.CanvasTexture(canvas);
-  }
-
-  function initSplashGlobe() {
-    const container = document.getElementById('globe-container');
-    if (!container) return;
-
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    // 1. Scene & Camera Setup (Pull camera back to 2.6 to prevent edge clipping)
-    globeScene = new THREE.Scene();
-    globeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    globeCamera.position.z = 2.6;
-
-    // 2. Renderer Setup
-    globeRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    globeRenderer.setSize(width, height);
-    globeRenderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(globeRenderer.domElement);
-
-    // 3. Create Smooth Sphere Geometry (64x64 segments removes flat edges)
-    const geometry = new THREE.SphereGeometry(1, 64, 64);
-    const mapTexture = createWorldMapTexture();
-
-    const material = new THREE.MeshBasicMaterial({ 
-      map: mapTexture,
-      transparent: true 
-    });
-
-    globeMesh = new THREE.Mesh(geometry, material);
-    globeScene.add(globeMesh);
-
-    // 4. Mouse / Touch Dragging Interaction
-    container.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      previousMousePosition = { x: e.clientX, y: e.clientY };
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const deltaX = e.clientX - previousMousePosition.x;
-      const deltaY = e.clientY - previousMousePosition.y;
-
-      globeMesh.rotation.y += deltaX * 0.005;
-      globeMesh.rotation.x += deltaY * 0.005;
-
-      previousMousePosition = { x: e.clientX, y: e.clientY };
-    });
-
-    window.addEventListener('mouseup', () => { isDragging = false; });
-
-    // 5. Animation Loop
-    function animate() {
-      requestAnimationFrame(animate);
-      if (!isDragging) {
-        globeMesh.rotation.y += 0.002;
-      }
-      globeRenderer.render(globeScene, globeCamera);
-    }
-    animate();
-  }
-
-  function enterPortfolio() {
-    const splash = document.getElementById('splash-screen');
-    const mainContent = document.getElementById('main-content');
-    if (!splash || !mainContent) return;
-
-    splash.style.opacity = '0';
-    setTimeout(() => {
-      splash.style.display = 'none';
-    }, 700);
-
-    mainContent.style.pointerEvents = 'auto';
-    mainContent.style.opacity = '1';
-  }
-
-  window.addEventListener('DOMContentLoaded', initSplashGlobe);
-</script>
-  
+<!-- Loading Screen -->  
 </body>
 </html>
