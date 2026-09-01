@@ -1068,7 +1068,6 @@
   </script>
 
 <!-- Loading Screen -->
-<!-- Include Three.js & OrbitControls for smooth interaction -->
 <!-- Include Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -1077,6 +1076,44 @@
   let isDragging = false;
   let previousMousePosition = { x: 0, y: 0 };
 
+  // Generate a procedural world map canvas texture for landmasses
+  function createWorldMapTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2048;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+
+    // Ocean background (dark navy)
+    ctx.fillStyle = '#0d0f1f';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw stylized landmass silhouettes (approximate continent coordinates)
+    ctx.fillStyle = '#16193b'; // Slightly lighter purple-navy for land fill
+    ctx.strokeStyle = '#6666ff'; // Sunset-inspired purple outline
+    ctx.lineWidth = 4;
+
+    // Helper to draw land blobs
+    function drawBlob(x, y, radiusX, radiusY) {
+      ctx.beginPath();
+      ctx.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // North America
+    drawBlob(450, 300, 180, 120);
+    // South America
+    drawBlob(600, 700, 120, 180);
+    // Europe & Asia
+    drawBlob(1200, 280, 350, 140);
+    // Africa
+    drawBlob(1100, 650, 150, 200);
+    // Australia
+    drawBlob(1650, 750, 100, 80);
+
+    return new THREE.CanvasTexture(canvas);
+  }
+
   function initSplashGlobe() {
     const container = document.getElementById('globe-container');
     if (!container) return;
@@ -1084,37 +1121,27 @@
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // 1. Scene & Camera Setup
+    // 1. Scene & Camera Setup (Pull camera back to 2.6 to prevent edge clipping)
     globeScene = new THREE.Scene();
     globeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    globeCamera.position.z = 2.5;
+    globeCamera.position.z = 2.6;
 
-    // 2. Renderer Setup (transparent background)
+    // 2. Renderer Setup
     globeRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     globeRenderer.setSize(width, height);
     globeRenderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(globeRenderer.domElement);
 
-    // 3. Create Sphere with Purple Wireframe / Outline Style
-    const geometry = new THREE.SphereGeometry(1, 48, 48);
-    
-    // Dark base material for the globe body
-    const baseMaterial = new THREE.MeshBasicMaterial({
-      color: 0x0d0f1f,
-      transparent: true,
-      opacity: 0.9
-    });
-    const baseSphere = new THREE.Mesh(geometry, baseMaterial);
-    globeScene.add(baseSphere);
+    // 3. Create Smooth Sphere Geometry (64x64 segments removes flat edges)
+    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    const mapTexture = createWorldMapTexture();
 
-    // Purple outline wireframe overlay matching your aesthetic
-    const wireframeMaterial = new THREE.MeshBasicMaterial({
-      color: 0x6666ff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.35
+    const material = new THREE.MeshBasicMaterial({ 
+      map: mapTexture,
+      transparent: true 
     });
-    globeMesh = new THREE.Mesh(geometry, wireframeMaterial);
+
+    globeMesh = new THREE.Mesh(geometry, material);
     globeScene.add(globeMesh);
 
     // 4. Mouse / Touch Dragging Interaction
@@ -1130,8 +1157,6 @@
 
       globeMesh.rotation.y += deltaX * 0.005;
       globeMesh.rotation.x += deltaY * 0.005;
-      baseSphere.rotation.y += deltaX * 0.005;
-      baseSphere.rotation.x += deltaY * 0.005;
 
       previousMousePosition = { x: e.clientX, y: e.clientY };
     });
@@ -1143,14 +1168,12 @@
       requestAnimationFrame(animate);
       if (!isDragging) {
         globeMesh.rotation.y += 0.002;
-        baseSphere.rotation.y += 0.002;
       }
       globeRenderer.render(globeScene, globeCamera);
     }
     animate();
   }
 
-  // Guaranteed click-to-enter function
   function enterPortfolio() {
     const splash = document.getElementById('splash-screen');
     const mainContent = document.getElementById('main-content');
