@@ -1067,101 +1067,77 @@
     })();
   </script>
 
-<!-- Include Three.js -->
+<!-- Loading Screen -->
 <!-- Include Three.js & OrbitControls for smooth interaction -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="//unpkg.com/three-globe"></script>
 
 <script>
-  let globeScene, globeCamera, globeRenderer, globeControls;
+  let globeScene, globeCamera, globeRenderer, myGlobe;
 
-  function initStyledGlobe() {
+  function initVectorGlobe() {
     const container = document.getElementById('globe-container');
     if (!container) return;
 
-    // Get container dimensions
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // 1. Scene Setup
+    // 1. Scene & Camera Setup
     globeScene = new THREE.Scene();
-    // Use a dark background that matches your splash screen
-    globeScene.background = new THREE.Color(0x0d0f1f); 
+    globeCamera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+    globeCamera.position.z = 300;
 
-    // 2. Camera Setup - Adjusted FOV for less distortion on edges
-    globeCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
-    globeCamera.position.z = 3.5; // Pull camera back slightly to fit the sphere
-
-    // 3. Renderer Setup with Anti-aliasing for smooth lines
+    // 2. Renderer Setup
     globeRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     globeRenderer.setSize(width, height);
     globeRenderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(globeRenderer.domElement);
 
-    // 4. Add OrbitControls for smooth rotation and zoom
-    globeControls = new THREE.OrbitControls(globeCamera, globeRenderer.domElement);
-    globeControls.enableDamping = true; // Adds inertia
-    globeControls.dampingFactor = 0.05;
-    globeControls.rotateSpeed = 0.3;
-    globeControls.enableZoom = false; // Keep it a static-feeling globe
-    globeControls.enablePan = false;
+    // 3. Initialize ThreeGlobe with custom styling matching your theme
+    myGlobe = new ThreeGlobe()
+      .globeImageUrl('') // Leave empty so it's a clean dark sphere
+      .backgroundColor('rgba(0,0,0,0)')
+      .globeColor('#0d0f1f') // matches your ink-900 theme
+      .showAtmosphere(true)
+      .atmosphereColor('#ff7b54') // sunset-orange glow
+      .atmosphereAltitude(0.15);
 
-    // 5. Create the Earth: Sphere Geometry
-    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    // Load world polygons (continents) data via TopoJSON
+    fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json')
+      .then(res => res.json())
+      .then(countries => {
+        const subunits = topojson.feature(countries, countries.objects.countries);
+        myGlobe
+          .polygonsData(subunits.features)
+          .polygonCapColor(() => '#0d0f1f') // Interior color of land
+          .polygonSideColor(() => 'rgba(102, 102, 255, 0.05)')
+          .polygonStrokeColor(() => '#6666ff'); // Purple outline color for continents
+      });
 
-    // 6. Create the Landmasses (The "purple outline" look)
-    // We use a basic material that shows lines/wireframe
-    const landMaterial = new THREE.MeshBasicMaterial({
-      color: 0x6666ff, // A distinct purple/blue
-      wireframe: true, // This creates the geometric outline look
-      transparent: true,
-      opacity: 0.4 // Subtle, not overpowering
-    });
-    const landMesh = new THREE.Mesh(geometry, landMaterial);
-    globeScene.add(landMesh);
+    globeScene.add(myGlobe);
 
-    // 7. Create the Ocean/Fill (The darker background sphere)
-    const oceanGeometry = new THREE.SphereGeometry(0.99, 64, 64); // Slightly smaller
-    const oceanMaterial = new THREE.MeshBasicMaterial({
-      color: 0x060815, // A very dark navy/black fill
-      transparent: true,
-      opacity: 0.9
-    });
-    const oceanMesh = new THREE.Mesh(oceanGeometry, oceanMaterial);
-    globeScene.add(oceanMesh);
-
-    // 8. Add subtle ambient light (though MeshBasicMaterial doesn't strictly need it)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // 4. Add Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     globeScene.add(ambientLight);
 
-    // Handle Window Resize
-    window.addEventListener('resize', onWindowResize, false);
+    // 5. Auto-rotation & Animation Loop
+    myGlobe.controls().autoRotate = true;
+    myGlobe.controls().autoRotateSpeed = 0.5;
+    myGlobe.controls().enableZoom = false;
+    myGlobe.controls().enablePan = false;
 
-    function onWindowResize() {
-      const newWidth = container.clientWidth;
-      const newHeight = container.clientHeight;
-      globeCamera.aspect = newWidth / newHeight;
-      globeCamera.updateProjectionMatrix();
-      globeRenderer.setSize(newWidth, newHeight);
-    }
-
-    // 9. Animation Loop
     function animate() {
       requestAnimationFrame(animate);
-      
-      // Optional: Add a very slow auto-rotation
-      landMesh.rotation.y += 0.0005;
-      oceanMesh.rotation.y += 0.0005;
-
-      globeControls.update(); // Required for damping
+      myGlobe.tick();
       globeRenderer.render(globeScene, globeCamera);
     }
     animate();
   }
 
-  // Initialize on DOMContentLoaded
-  window.addEventListener('DOMContentLoaded', initStyledGlobe);
+  window.addEventListener('DOMContentLoaded', initVectorGlobe);
 </script>
+<!-- Include TopoJSON library required to parse land polygon data -->
+<script src="//unpkg.com/topojson-client"></script>
 
 <style>
   /* Ensure the container holds the canvas correctly */
