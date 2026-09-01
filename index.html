@@ -1069,13 +1069,15 @@
 
 <!-- Loading Screen -->
 <!-- Include Three.js & OrbitControls for smooth interaction -->
+<!-- Include Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="//unpkg.com/three-globe"></script>
 
 <script>
-  let globeScene, globeCamera, globeRenderer, myGlobe;
+  let globeScene, globeCamera, globeRenderer, globeMesh;
+  let isDragging = false;
+  let previousMousePosition = { x: 0, y: 0 };
 
-  function initVectorGlobe() {
+  function initSplashGlobe() {
     const container = document.getElementById('globe-container');
     if (!container) return;
 
@@ -1084,79 +1086,87 @@
 
     // 1. Scene & Camera Setup
     globeScene = new THREE.Scene();
-    globeCamera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
-    globeCamera.position.z = 300;
+    globeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    globeCamera.position.z = 2.5;
 
-    // 2. Renderer Setup
+    // 2. Renderer Setup (transparent background)
     globeRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     globeRenderer.setSize(width, height);
     globeRenderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(globeRenderer.domElement);
 
-    // 3. Initialize ThreeGlobe with custom styling matching your theme
-    myGlobe = new ThreeGlobe()
-      .globeImageUrl('') // Leave empty so it's a clean dark sphere
-      .backgroundColor('rgba(0,0,0,0)')
-      .globeColor('#0d0f1f') // matches your ink-900 theme
-      .showAtmosphere(true)
-      .atmosphereColor('#ff7b54') // sunset-orange glow
-      .atmosphereAltitude(0.15);
+    // 3. Create Sphere with Purple Wireframe / Outline Style
+    const geometry = new THREE.SphereGeometry(1, 48, 48);
+    
+    // Dark base material for the globe body
+    const baseMaterial = new THREE.MeshBasicMaterial({
+      color: 0x0d0f1f,
+      transparent: true,
+      opacity: 0.9
+    });
+    const baseSphere = new THREE.Mesh(geometry, baseMaterial);
+    globeScene.add(baseSphere);
 
-    // Load world polygons (continents) data via TopoJSON
-    fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json')
-      .then(res => res.json())
-      .then(countries => {
-        const subunits = topojson.feature(countries, countries.objects.countries);
-        myGlobe
-          .polygonsData(subunits.features)
-          .polygonCapColor(() => '#0d0f1f') // Interior color of land
-          .polygonSideColor(() => 'rgba(102, 102, 255, 0.05)')
-          .polygonStrokeColor(() => '#6666ff'); // Purple outline color for continents
-      });
+    // Purple outline wireframe overlay matching your aesthetic
+    const wireframeMaterial = new THREE.MeshBasicMaterial({
+      color: 0x6666ff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.35
+    });
+    globeMesh = new THREE.Mesh(geometry, wireframeMaterial);
+    globeScene.add(globeMesh);
 
-    globeScene.add(myGlobe);
+    // 4. Mouse / Touch Dragging Interaction
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
 
-    // 4. Add Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    globeScene.add(ambientLight);
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - previousMousePosition.x;
+      const deltaY = e.clientY - previousMousePosition.y;
 
-    // 5. Auto-rotation & Animation Loop
-    myGlobe.controls().autoRotate = true;
-    myGlobe.controls().autoRotateSpeed = 0.5;
-    myGlobe.controls().enableZoom = false;
-    myGlobe.controls().enablePan = false;
+      globeMesh.rotation.y += deltaX * 0.005;
+      globeMesh.rotation.x += deltaY * 0.005;
+      baseSphere.rotation.y += deltaX * 0.005;
+      baseSphere.rotation.x += deltaY * 0.005;
 
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    // 5. Animation Loop
     function animate() {
       requestAnimationFrame(animate);
-      myGlobe.tick();
+      if (!isDragging) {
+        globeMesh.rotation.y += 0.002;
+        baseSphere.rotation.y += 0.002;
+      }
       globeRenderer.render(globeScene, globeCamera);
     }
     animate();
   }
 
-  window.addEventListener('DOMContentLoaded', initVectorGlobe);
-</script>
-<!-- Include TopoJSON library required to parse land polygon data -->
-<script src="//unpkg.com/topojson-client"></script>
+  // Guaranteed click-to-enter function
+  function enterPortfolio() {
+    const splash = document.getElementById('splash-screen');
+    const mainContent = document.getElementById('main-content');
+    if (!splash || !mainContent) return;
 
-<style>
-  /* Ensure the container holds the canvas correctly */
-  #globe-container {
-    /* These are set in your HTML, but good to ensure */
-    width: 24rem; /* w-96 */
-    height: 24rem; /* h-96 */
-    border-radius: 9999px; /* full */
-    overflow: hidden;
-    position: relative;
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      splash.style.display = 'none';
+    }, 700);
+
+    mainContent.style.pointerEvents = 'auto';
+    mainContent.style.opacity = '1';
   }
-  
-  /* Style the canvas element itself */
-  #globe-container canvas {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-  }
-</style>
+
+  window.addEventListener('DOMContentLoaded', initSplashGlobe);
+</script>
   
 </body>
 </html>
