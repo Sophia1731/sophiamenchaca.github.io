@@ -1093,23 +1093,54 @@
     ctx.lineWidth = 4;
 
     // Helper to draw land blobs
-    function drawBlob(x, y, radiusX, radiusY) {
+    // Helper to draw complex polygon shapes from coordinate arrays
+    function drawPolygon(coords) {
+      if (coords.length === 0) return;
       ctx.beginPath();
-      ctx.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
+      ctx.moveTo(coords[0][0], coords[0][1]);
+      for (let i = 1; i < coords.length; i++) {
+        ctx.lineTo(coords[i][0], coords[i][1]);
+      }
+      ctx.closePath();
       ctx.fill();
       ctx.stroke();
     }
 
-    // North America
-    drawBlob(450, 300, 180, 120);
-    // South America
-    drawBlob(600, 700, 120, 180);
-    // Europe & Asia
-    drawBlob(1200, 280, 350, 140);
-    // Africa
-    drawBlob(1100, 650, 150, 200);
-    // Australia
-    drawBlob(1650, 750, 100, 80);
+    // 1. North America (Detailed Silhouette)
+    drawPolygon([
+      [350, 150], [480, 140], [550, 180], [580, 240], [520, 310], 
+      [490, 380], [450, 450], [380, 420], [340, 350], [380, 300], 
+      [320, 260], [280, 280], [250, 220], [310, 180]
+    ]);
+
+    // 2. South America
+    drawPolygon([
+      [470, 500], [540, 490], [580, 530], [540, 620], [510, 720], 
+      [480, 820], [440, 780], [410, 680], [430, 580]
+    ]);
+
+    // 3. Eurasia (Europe & Asia combined landmass)
+    drawPolygon([
+      [950, 150], [1150, 130], [1350, 160], [1550, 180], [1650, 250], 
+      [1580, 320], [1450, 300], [1380, 350], [1250, 380], [1180, 310], 
+      [1080, 320], [1020, 250], [960, 260]
+    ]);
+
+    // 4. Africa
+    drawPolygon([
+      [1020, 420], [1120, 400], [1180, 480], [1160, 600], [1100, 720], 
+      [1040, 780], [1000, 680], [970, 550], [980, 480]
+    ]);
+
+    // 5. Australia
+    drawPolygon([
+      [1550, 680], [1680, 670], [1720, 740], [1670, 810], [1530, 800], [1500, 720]
+    ]);
+
+    // 6. Greenland
+    drawPolygon([
+      [650, 120], [720, 100], [700, 170], [640, 180]
+    ]);
 
     return new THREE.CanvasTexture(canvas);
   }
