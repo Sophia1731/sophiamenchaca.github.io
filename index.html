@@ -1068,96 +1068,119 @@
   </script>
 
 <!-- Include Three.js -->
+<!-- Include Three.js & OrbitControls for smooth interaction -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
-  let globeScene, globeCamera, globeRenderer, globeMesh;
-  let isDragging = false;
-  let previousMousePosition = { x: 0, y: 0 };
+  let globeScene, globeCamera, globeRenderer, globeControls;
 
-  function initSplashGlobe() {
+  function initStyledGlobe() {
     const container = document.getElementById('globe-container');
     if (!container) return;
 
-    // 1. Scene & Camera Setup
-    globeScene = new THREE.Scene();
-    globeCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    globeCamera.position.z = 2.5;
+    // Get container dimensions
+    const width = container.clientWidth;
+    const height = container.clientHeight;
 
-    // 2. Renderer Setup
+    // 1. Scene Setup
+    globeScene = new THREE.Scene();
+    // Use a dark background that matches your splash screen
+    globeScene.background = new THREE.Color(0x0d0f1f); 
+
+    // 2. Camera Setup - Adjusted FOV for less distortion on edges
+    globeCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
+    globeCamera.position.z = 3.5; // Pull camera back slightly to fit the sphere
+
+    // 3. Renderer Setup with Anti-aliasing for smooth lines
     globeRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    globeRenderer.setSize(container.clientWidth, container.clientHeight);
+    globeRenderer.setSize(width, height);
     globeRenderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(globeRenderer.domElement);
 
-    // 3. Load Earth Texture & Create Textured Globe
+    // 4. Add OrbitControls for smooth rotation and zoom
+    globeControls = new THREE.OrbitControls(globeCamera, globeRenderer.domElement);
+    globeControls.enableDamping = true; // Adds inertia
+    globeControls.dampingFactor = 0.05;
+    globeControls.rotateSpeed = 0.3;
+    globeControls.enableZoom = false; // Keep it a static-feeling globe
+    globeControls.enablePan = false;
+
+    // 5. Create the Earth: Sphere Geometry
     const geometry = new THREE.SphereGeometry(1, 64, 64);
-    const textureLoader = new THREE.TextureLoader();
 
-    textureLoader.load(
-      'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
-      function (texture) {
-        const material = new THREE.MeshBasicMaterial({ 
-          map: texture,
-          transparent: true 
-        });
-        globeMesh = new THREE.Mesh(geometry, material);
-        globeScene.add(globeMesh);
-      },
-      undefined,
-      function (error) {
-        console.error('An error occurred loading the earth texture:', error);
-      }
-    );
-
-    // 4. Mouse / Touch Interaction for Dragging
-    container.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      previousMousePosition = { x: e.clientX, y: e.clientY };
+    // 6. Create the Landmasses (The "purple outline" look)
+    // We use a basic material that shows lines/wireframe
+    const landMaterial = new THREE.MeshBasicMaterial({
+      color: 0x6666ff, // A distinct purple/blue
+      wireframe: true, // This creates the geometric outline look
+      transparent: true,
+      opacity: 0.4 // Subtle, not overpowering
     });
+    const landMesh = new THREE.Mesh(geometry, landMaterial);
+    globeScene.add(landMesh);
 
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const deltaX = e.clientX - previousMousePosition.x;
-      const deltaY = e.clientY - previousMousePosition.y;
-
-      if (globeMesh) {
-        globeMesh.rotation.y += deltaX * 0.005;
-        globeMesh.rotation.x += deltaY * 0.005;
-      }
-
-      previousMousePosition = { x: e.clientX, y: e.clientY };
+    // 7. Create the Ocean/Fill (The darker background sphere)
+    const oceanGeometry = new THREE.SphereGeometry(0.99, 64, 64); // Slightly smaller
+    const oceanMaterial = new THREE.MeshBasicMaterial({
+      color: 0x060815, // A very dark navy/black fill
+      transparent: true,
+      opacity: 0.9
     });
+    const oceanMesh = new THREE.Mesh(oceanGeometry, oceanMaterial);
+    globeScene.add(oceanMesh);
 
-    window.addEventListener('mouseup', () => { isDragging = false; });
+    // 8. Add subtle ambient light (though MeshBasicMaterial doesn't strictly need it)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    globeScene.add(ambientLight);
 
-    // 5. Animation Loop
+    // Handle Window Resize
+    window.addEventListener('resize', onWindowResize, false);
+
+    function onWindowResize() {
+      const newWidth = container.clientWidth;
+      const newHeight = container.clientHeight;
+      globeCamera.aspect = newWidth / newHeight;
+      globeCamera.updateProjectionMatrix();
+      globeRenderer.setSize(newWidth, newHeight);
+    }
+
+    // 9. Animation Loop
     function animate() {
       requestAnimationFrame(animate);
-      if (!isDragging) {
-        if (globeMesh) globeMesh.rotation.y += 0.002;
-      }
+      
+      // Optional: Add a very slow auto-rotation
+      landMesh.rotation.y += 0.0005;
+      oceanMesh.rotation.y += 0.0005;
+
+      globeControls.update(); // Required for damping
       globeRenderer.render(globeScene, globeCamera);
     }
     animate();
   }
 
-  // Function triggered when user clicks the globe to enter site
-  function enterPortfolio() {
-    const splash = document.getElementById('splash-screen');
-    const mainContent = document.getElementById('main-content');
-
-    splash.style.opacity = '0';
-    setTimeout(() => {
-      splash.style.display = 'none';
-    }, 700);
-
-    mainContent.style.pointerEvents = 'auto';
-    mainContent.style.opacity = '1';
-  }
-
-  window.addEventListener('DOMContentLoaded', initSplashGlobe);
+  // Initialize on DOMContentLoaded
+  window.addEventListener('DOMContentLoaded', initStyledGlobe);
 </script>
+
+<style>
+  /* Ensure the container holds the canvas correctly */
+  #globe-container {
+    /* These are set in your HTML, but good to ensure */
+    width: 24rem; /* w-96 */
+    height: 24rem; /* h-96 */
+    border-radius: 9999px; /* full */
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* Style the canvas element itself */
+  #globe-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+</style>
   
 </body>
 </html>
