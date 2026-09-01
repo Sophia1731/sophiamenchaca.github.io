@@ -106,10 +106,8 @@
     margin-right: 0.5rem;
   }
 </style>
-
 </head>
 <body class="font-body text-paper antialiased overflow-x-hidden">
-
 
   <!-- ambient background arcs -->
   <div class="fixed inset-0 -z-10 pointer-events-none">
@@ -120,7 +118,7 @@
       <path class="arc-line" d="M200,500 Q700,220 1220,300" stroke="#ff5c8a" stroke-width="1.2" fill="none" style="animation-delay:.3s"/>
     </svg>
   </div>
-<div id="main-content" class="opacity-0 transition-opacity duration-1000 pointer-events-none">
+
   <!-- NAV -->
   <header class="fixed top-0 inset-x-0 z-40 backdrop-blur-md bg-ink-950/60 border-b border-white/5">
     <div class="max-w-6xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
@@ -710,7 +708,7 @@
           <span class="flex items-center gap-2"><span class="w-3 h-0.5 bg-sunset-coral"></span>flight</span>
           <span class="flex items-center gap-2"><span class="w-3 h-0.5 bg-dusk-400" style="background-image:repeating-linear-gradient(90deg,#a78bfa 0 3px,transparent 3px 6px)"></span>train</span>
           <span class="flex items-center gap-2"><span class="w-3 h-0.5" style="background-image:repeating-linear-gradient(90deg,#ffce6b 0 1.5px,transparent 1.5px 4px)"></span>bus</span>
-          <span class="flex items-center gap-2"><span class="text-sunset-rose">~</span> ferry</span>
+          <span class="flex items-center gap-2"><span class="w-3 h-0.5" style="background-image:repeating-linear-gradient(90deg,#38bdf8 0 1px,transparent 1px 3px)"></span><span class="text-sunset-rose">~</span> ferry</span>
         </div>
         <a href="https://interact-map-sophia.streamlit.app/" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-sm text-sunset-orange hover:text-sunset-gold transition">
           Open full journal
@@ -976,7 +974,7 @@
     </div>
     <p class="max-w-6xl mx-auto mt-16 text-xs font-mono text-fog/60">© 2026 Sophia Menchaca. Currently plotting the next route.</p>
   </footer>
-</div>
+
   <script>
     // mobile menu
     const menuBtn = document.getElementById('menu-btn');
@@ -1050,7 +1048,5 @@
       }
     })();
   </script>
-
-<!-- Loading Screen -->  
 </body>
 </html>
