@@ -1,9 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://sophiamenchaca.com/</loc>
-    <lastmod>2026-09-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+    <url>
+        <loc>https://sophiamenchaca.com/</loc>
+        <lastmod>2026-09-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>1.0</priority>
+        
+        <image:image>
+            <image:loc>https://sophiamenchaca.com/images/acropolis.jpg</image:loc>
+            <image:title>Acropolis</image:title>
+            <image:caption>Historic Acropolis architecture and ruins.</image:caption>
+        </image:image>
+        <image:image>
+            <image:loc>https://sophiamenchaca.com/images/chicago-market.jpg</image:loc>
+            <image:title>Lincoln Park Farmers Market</image:title>
+            <image:caption>Sophia Lincoln Park Farmers Market.</image:caption>
+        </image:image>
+        <image:image>
+            <image:loc>https://sophiamenchaca.com/images/depaul-grad.jpg</image:loc>
+            <image:title>Sophia DePaul University Graduation Photo</image:title>
+            <image:caption>Sophia DePaul University Graduation Photo.</image:caption>
+        </image:image>
+        <image:image>
+            <image:loc>https://sophiamenchaca.com/images/ireland-profile.jpg</image:loc>
+            <image:title>Sophia Cliffs of Moher Ireland</image:title>
+            <image:caption>Sophia Cliffs of Moher Ireland.</image:caption>
+        </image:image>
+      
+        <image:image>
+            <image:loc>https://sophiamenchaca.com/images/lake-louise.jpg</image:loc>
+            <image:title>Sophia Lake Louise Banff Canada</image:title>
+            <image:caption>Sophia Lake Louise Banff Canada.</image:caption>
+        </image:image>
+      <image:image>
+            <image:loc>https://sophiamenchaca.com/images/marist-grad.jpg</image:loc>
+            <image:title>Sophia Marist College Campus</image:title>
+            <image:caption>Sophia Marist College Campus.</image:caption>
+        </image:image>
+      <image:image>
+            <image:loc>https://sophiamenchaca.com/images/mexico-profile.jpg</image:loc>
+            <image:title>Sophia Mexico City</image:title>
+            <image:caption>Sophia Mexico City.</image:caption>
+        </image:image>
+      <image:image>
+            <image:loc>https://sophiamenchaca.com/images/paris-profile.jpg</image:loc>
+            <image:title>Sophia Eiffel Tower Paris Olypics</image:title>
+            <image:caption>Sophia Eiffel Tower Paris Olypics.</image:caption>
+        </image:image>
+    </url>
 </urlset>
