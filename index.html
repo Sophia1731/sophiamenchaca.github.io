@@ -836,9 +836,6 @@
           <span class="px-4 py-2 rounded-full border border-dashed border-sunset-rose/50 text-sm text-sunset-rose">Botswana</span>
           <span class="px-4 py-2 rounded-full border border-dashed border-sunset-rose/50 text-sm text-sunset-rose">Mauritius</span>
           <span class="px-4 py-2 rounded-full border border-dashed border-sunset-rose/50 text-sm text-sunset-rose">Madagascar</span>
-          <span class="px-4 py-2 rounded-full border border-dashed border-sunset-rose/50 text-sm text-sunset-rose">Thailand</span>
-          <span class="px-4 py-2 rounded-full border border-dashed border-sunset-rose/50 text-sm text-sunset-rose">Cuba</span>
-          <span class="px-4 py-2 rounded-full border border-dashed border-sunset-rose/50 text-sm text-sunset-rose">Brazil</span>
           <span class="px-4 py-2 rounded-full border border-dashed border-sunset-rose/50 text-sm text-sunset-rose">Turkey</span>
         </div>
       </div>
@@ -1026,7 +1023,7 @@
 
       // ISO 3166-1 numeric codes
       const visited = new Set([840,484,124,826,380,336,300,372,528,56,442,250,170,352,578,752,208,276,492,404,36,554]);
-      const upcoming = new Set([710,716,72,480,450,764,192,76,792]);
+      const upcoming = new Set([710,716,72,480,450,792]);
 
       try {
         const world = await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
